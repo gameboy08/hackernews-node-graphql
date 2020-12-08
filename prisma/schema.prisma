@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Link {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  description String
+  url         String
+  postedBy    User?    @relation(fields: [postedById], references: [id]) // relation field; related table User;
+  postedById  Int?     // relation scalar field (used in the `@relation` attribute above); foreign key
+  votes       Vote[]
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  links    Link[]
+  votes    Vote[]
+}
+
+// The @relation  attribute can only be applied to the relation fields, not to scalar fields. 
+// The attributes is required on one side of 1-1 and 1-n relations.
+model Vote {
+  id     Int  @id @default(autoincrement())
+  link   Link @relation(fields: [linkId], references: [id]) // relation field; related table Link;
+  linkId Int  // relation scalar field (used in the `@relation` attribute above); foreign key
+  user   User @relation(fields: [userId], references: [id]) // relation field; related table User;
+  userId Int  // relation scalar field (used in the `@relation` attribute above); foreign key
+
+  @@unique([linkId, userId])
+}
